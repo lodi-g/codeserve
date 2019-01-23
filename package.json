@@ -1,6 +1,6 @@
 {
   "name": "codeserve",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "codeserve - serving code with an expressJS server",
   "main": "app.js",
   "repository": "git@github.com:lodi-g/codeserve",

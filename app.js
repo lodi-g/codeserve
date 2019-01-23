@@ -15,7 +15,7 @@ const createAp = () => {
   const defaultStyle = 'github';
 
   const parser = new ArgumentParser({
-    version: '0.0.6',
+    version: '0.0.7',
     addHelp: true,
     description: 'codeserve - serving code with an expressJS server'
   });
