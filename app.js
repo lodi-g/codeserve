@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const fs = require('fs');
 const util = require('util');
 
@@ -6,14 +8,14 @@ const express = require('express');
 const hl = require('highlight.js');
 const serveIndex = require('serve-index');
 
-const stylesheetPath = 'node_modules/highlight.js/styles/%s.css';
+const stylesheetPath = `${__dirname}/node_modules/highlight.js/styles/%s.css`;
 
 // Arguments
 const createAp = () => {
   const defaultStyle = 'github';
 
   const parser = new ArgumentParser({
-    version: '0.0.1',
+    version: '0.0.6',
     addHelp: true,
     description: 'codeserve - serving code with an expressJS server'
   });
@@ -46,9 +48,7 @@ const args = createAp().parseArgs();
 
 // Arguments are OK, server
 const app = express();
-const stylesheet = fs
-  .readFileSync(util.format(stylesheetPath, args.style))
-  .toString('utf-8');
+const stylesheet = fs.readFileSync(util.format(stylesheetPath, args.style)).toString('utf-8');
 
 // Template function - have something simple
 const template = (locals, cb) => {
@@ -59,24 +59,26 @@ const template = (locals, cb) => {
 
   html += locals.fileList
     .sort((a, b) => (a.name > b.name ? 1 : -1))
-    .map(file =>
-      file.stat.isDirectory() ? { ...file, name: `${file.name}/` } : { ...file }
-    )
-    .reduce(
-      (acc, file) => acc + `<li><a href=${file.name}>${file.name}</a></li>`,
-      ''
-    );
+    .filter(file => file.stat)
+    .map(file => (file.stat.isDirectory() ? { ...file, name: `${file.name}/` } : { ...file }))
+    .reduce((acc, file) => acc + `<li><a href=${file.name}>${file.name}</a></li>`, '');
 
   cb(null, html);
 };
 
 // Routes
 app.use('/', serveIndex(args.directory, { hidden: true, template }));
+app.use('/favicon.ico', (req, res) => res.sendStatus(200));
 app.use('/', (req, res, next) => {
-  const relativePath = req.originalUrl.substr(
+  const url = req._parsedOriginalUrl;
+  const relativePath = url.pathname.substr(
     args.directory[args.directory.length - 1] === '/' ? 1 : 0
   );
   const path = `${args.directory}${relativePath}`;
+
+  if (url.query === '__codeservedl') {
+    return res.sendFile(url.pathname, { root: args.directory });
+  }
 
   let file;
   try {
@@ -87,6 +89,7 @@ app.use('/', (req, res, next) => {
   }
 
   let html = `<pre class='hljs'>${hl.highlightAuto(file).value}</pre>`;
+  html += `<a href="${url.href}?__codeservedl"><button>Download</button></a>`;
   html += `<style>${stylesheet}</style>`;
   res.send(html);
 });
