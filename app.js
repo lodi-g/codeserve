@@ -8,7 +8,7 @@ const express = require('express');
 const hl = require('highlight.js');
 const serveIndex = require('serve-index');
 
-const stylesheetPath = `${__dirname}/node_modules/highlight.js/styles/%s.css`;
+const stylesheetPath = `${__dirname}/styles/%s.css`;
 
 // Arguments
 const createAp = () => {
