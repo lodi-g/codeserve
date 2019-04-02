@@ -15,7 +15,7 @@ const createAp = () => {
   const defaultStyle = 'github';
 
   const parser = new ArgumentParser({
-    version: '0.0.7',
+    version: '0.0.8',
     addHelp: true,
     description: 'codeserve - serving code with an expressJS server'
   });
@@ -61,7 +61,7 @@ const template = (locals, cb) => {
     .sort((a, b) => (a.name > b.name ? 1 : -1))
     .filter(file => file.stat)
     .map(file => (file.stat.isDirectory() ? { ...file, name: `${file.name}/` } : { ...file }))
-    .reduce((acc, file) => acc + `<li><a href=${file.name}>${file.name}</a></li>`, '');
+    .reduce((acc, file) => acc + `<li><a href="${file.name}">${file.name}</a></li>`, '');
 
   cb(null, html);
 };
@@ -74,7 +74,7 @@ app.use('/', (req, res, next) => {
   const relativePath = url.pathname.substr(
     args.directory[args.directory.length - 1] === '/' ? 1 : 0
   );
-  const path = `${args.directory}${relativePath}`;
+  const path = decodeURI(`${args.directory}${relativePath}`);
 
   if (url.query === '__codeservedl') {
     return res.sendFile(url.pathname, { root: args.directory });
